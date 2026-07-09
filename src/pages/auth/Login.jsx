@@ -1,6 +1,8 @@
-import React from 'react';
+import { useContext } from 'react';
+import { useAuth } from '../../hook/useAuth.jsx';
 
 function Login() {
+  const data = useAuth();
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
       <h1 className="mb-2 text-3xl font-bold">
