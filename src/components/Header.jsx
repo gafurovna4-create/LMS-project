@@ -1,8 +1,21 @@
 import React from 'react'
-import { Bell, Search } from "lucide-react"; 
+import { Bell, Search } from "lucide-react";
+import { useAuth } from '../hook/useAuth';
 
 
 function Header() {
+
+  const { user, loading } = useAuth();
+  console.log(user)
+
+  if (loading) return <p>Yuklanmoqda...</p>
+
+  if (!user) {
+    return
+    <p>Siz login qilmagansiz. Iltimos, avval kiring!</p>
+  }
+
+
   return (
     <header className="h-20 bg-white border-b flex items-center justify-between px-8">
       <div className="relative">
@@ -19,16 +32,16 @@ function Header() {
 
       <div className="flex items-center gap-6">
         <Bell className="cursor-pointer" />
-        
+
         <div className="flex items-center gap-3">
           <img
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop"
+            src={user?.avatar}
             className="w-10 h-10 rounded-full object-cover"
             alt="avatar"
           />
           <div>
-            <h3 className="font-medium">Munira</h3>
-            <p className="text-sm text-gray-500">Frontend Student</p>
+            <h3 className="font-medium">{user?.name}</h3>
+            <p className="text-sm text-gray-500">{user?.role}</p>
           </div>
         </div>
       </div>
