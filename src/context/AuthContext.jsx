@@ -44,12 +44,10 @@ export function AuthProvider({ children }) {
         return profile;
     }
 
-
-    async function register(email, name, password, role, avatar) {
-        await registerRequest(email, name, password, role, avatar);
+    async function register(email, name, password) {
+        await registerRequest(email, name, password);
         await login(email, password);
     }
-
     function logOut() {
         localStorage.removeItem("token");
         navigate("/login")

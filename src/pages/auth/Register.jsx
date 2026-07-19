@@ -21,7 +21,7 @@ function RegisterPage() {
       await register(email, name, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
     } finally {
       setSubmitting(false);
     }

@@ -57,7 +57,7 @@ function Login() {
             name="password"
             type="password"
             value={password}
-            onChange={(e) => setPasword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="Parol"
             className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-500"
           />
