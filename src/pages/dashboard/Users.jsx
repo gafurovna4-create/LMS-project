@@ -1,213 +1,167 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Modal from "./Modal"; 
 
 const Users = () => {
-  const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem("myUsers")
-    return saved ? JSON.parse(saved) : []
-  })
-  
-  const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: '',
-    avatar: ''
-  })
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    avatar: "https://i.pravatar.cc/150",
+  });
 
-  useEffect(() => {
-    localStorage.setItem("myUsers", JSON.stringify(users))
-  }, [users])
-
-  useEffect(() => {
-    if (users.length === 0) {
-      async function getUser() {
-        try {
-          const response = await axios('https://api.escuelajs.co/api/v1/users?limit=10')
-          setUsers(response.data)
-        } catch (error) {
-          console.log(error.message)
-        }
-      }
-      getUser()
+  const getUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await axios("https://api.escuelajs.co/api/v1/users?");
+      setUsers(response.data);
+    } catch (error) {
+      console.log(error.message);
+    } finally {
+      setLoading(false);
     }
-  }, [])
+  };
+
+  useEffect(() => {
+    getUsers();
+  }, []);
 
   function handleChange(e) {
-    const { name, value } = e.target
-    setNewUser((prev) => ({ ...prev, [name]: value }))
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault()
+  async function handleCreateUser(e) {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
-    if (!newUser.name || !newUser.email || !newUser.password) {
-      return
+    try {
+      const response = await axios.post("https://api.escuelajs.co/api/v1/users", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        avatar: form.avatar,
+        role: "customer",
+      });
+
+      // Yangi yaratilgan foydalanuvchini darhol ro'yxat boshiga qo'shamiz
+      setUsers((prev) => [response.data, ...prev]);
+
+      setForm({ name: "", email: "", password: "", avatar: "https://i.pravatar.cc/150" });
+      setShowForm(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Foydalanuvchi yaratib bo'lmadi");
+    } finally {
+      setSubmitting(false);
     }
+  }
 
-    const userToAdd = {
-      id: Date.now(),
-      name: newUser.name,
-      email: newUser.email,
-      password: newUser.password,
-      role: newUser.role || 'User',
-      avatar: newUser.avatar || ''
-    }
-
-    setUsers((prev) => [userToAdd, ...prev])
-    setNewUser({
-      name: '',
-      email: '',
-      password: '',
-      role: '',
-      avatar: ''
-    })
-    // close the create section after successful creation
-    setShowCreate(false)
+  if (loading) {
+    return (
+      <div className="flex min-h-75 items-center justify-center">
+        <p className="text-gray-500">Yuklanmoqda...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-6">
-      <div className="mx-auto max-w-325 space-y-6">
-        <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-800">Foydalanuvchilar</h1>
+        <button
+          onClick={() => setShowForm(true)}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          + Yangi foydalanuvchi
+        </button>
+      </div>
+
+      {/* Modal */}
+      <Modal
+        IsOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title="Yangi foydalanuvchi qo'shish"
+      >
+        <form onSubmit={handleCreateUser} className="space-y-3">
+          <input
+            type="text"
+            name="name"
+            placeholder="Ism"
+            value={form.name}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border p-3 outline-none focus:border-blue-500"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border p-3 outline-none focus:border-blue-500"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Parol"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border p-3 outline-none focus:border-blue-500"
+          />
+          <input
+            type="text"
+            name="avatar"
+            placeholder="Avatar URL"
+            value={form.avatar}
+            onChange={handleChange}
+            className="w-full rounded-lg border p-3 outline-none focus:border-blue-500"
+          />
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-lg bg-green-600 px-5 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {submitting ? "Saqlanmoqda..." : "Saqlash"}
+          </button>
+        </form>
+      </Modal>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {users.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-100 transition hover:shadow-md"
+          >
+            <img
+              src={item.avatar}
+              alt={item.name}
+              className="h-14 w-14 shrink-0 rounded-full object-cover"
+              onError={(e) => {
+                e.target.src = "https://i.pravatar.cc/100";
+              }}
+            />
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">User management</p>
-              <h1 className="mt-3 text-3xl font-semibold text-slate-900">Create User</h1>
-            </div>
-            <div className="rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600">
-              {users.length} users
+              <p className="text-base font-semibold text-slate-800">{item.name}</p>
+              <span className="mt-1 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+                {item.role || "customer"}
+              </span>
             </div>
           </div>
-
-          {!showCreate && (
-            <div className="mt-7 flex justify-end">
-              <button
-                onClick={() => setShowCreate(true)}
-                className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-              >
-                Create User
-              </button>
-            </div>
-          )}
-
-          {showCreate && (
-            <form onSubmit={handleSubmit} className="mt-7 grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <div className="mb-5">
-                <label className="mb-2 block text-sm font-medium text-slate-700">Full name</label>
-                <input
-                  name="name"
-                  value={newUser.name}
-                  onChange={handleChange}
-                  placeholder="Ism-familiya"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-5">
-                <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
-                <input
-                  name="password"
-                  type="password"
-                  value={newUser.password}
-                  onChange={handleChange}
-                  placeholder="Parol"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Avatar URL</label>
-                <input
-                  name="avatar"
-                  value={newUser.avatar}
-                  onChange={handleChange}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <div className="mb-5">
-                <label className="mb-2 block text-sm font-medium text-slate-700">Email address</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={handleChange}
-                  placeholder="admin@mail.com"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-5">
-                <label className="mb-2 block text-sm font-medium text-slate-700">Role</label>
-                <input
-                  name="role"
-                  value={newUser.role}
-                  onChange={handleChange}
-                  placeholder="Select role"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
-                />
-              </div>
-              <button
-                type="submit"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-base font-semibold text-white transition hover:bg-blue-700"
-              >
-                Create User
-              </button>
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCreate(false)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-              </div>
-              <p className="mt-5 text-sm text-slate-500">
-                Hisobingiz bormi? <span className="font-semibold text-blue-600">Kiring</span>
-              </p>
-            </div>
-            </form>
-          )}
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-          {users.map((item, index) => (
-            <div key={index} className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 overflow-hidden rounded-full">
-                  {item.avatar && item.avatar.startsWith('http') ? (
-                    <img src={item.avatar} alt={item.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-blue-500 to-indigo-500 text-xl font-semibold text-white">
-                      {(item.name || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-slate-900">{item.name || 'Unknown'}</p>
-                  <p className="text-sm text-slate-500">{item.role || 'User'}</p>
-                </div>
-              </div>
-              <div className="mt-5 space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Email</p>
-                  <p className="mt-1 truncate text-slate-800">{item.email || 'No email available'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">User ID</p>
-                  <p className="mt-1 text-slate-500">{item.id || '—'}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Users
+export default Users;

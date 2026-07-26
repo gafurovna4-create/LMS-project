@@ -1,20 +1,23 @@
-import React from 'react'
-import { useAuth } from '../hook/useAuth'
-import { Navigate, useLocation } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
-  const { token, loading } = useAuth();
-  const location = useLocation();
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
+
+function ProtectedRoute({ children }) {
+  const { user, token, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-500">Yuklanmoqda...</p>
+      </div>
+    );
   }
 
-  if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 }
 
-export default ProtectedRoute
+export default ProtectedRoute;

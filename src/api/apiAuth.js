@@ -1,43 +1,46 @@
 import { api } from "./api";
 
-
-const BASE_URL = "https://api.escuelajs.co/api/v1"
-
 export async function loginRequest(email, password) {
-    const response = await api.post("/auth/login", { email, password })
+  const response = await api.post("/auth/login", { email, password });
 
-    if (!response.data) {
-        throw new Error("Something went wrong!")
-    }
+  if (!response.data) {
+    throw new Error("Something went wrong!");
+  }
 
-    return response.data;
+  // access va refresh tokenlarni saqlab qo'yamiz
+  localStorage.setItem("token", response.data.access_token);
+  localStorage.setItem("refreshToken", response.data.refresh_token);
+
+  return response.data;
 }
 
-export async function registerRequest(email, name, password) {
+export async function registerRequest(email, name, password, role, avatar) {
   const response = await api.post("/users", {
     email,
     name,
     password,
+    role,
     avatar,
   });
-  
+
   if (!response.data) {
-    throw new Error("Something went wrong!")
+    throw new Error("Something went wrong!");
   }
 
   return response.data;
 }
 
-export async function getProfile(token) {
-    const response = await fetch(`${BASE_URL}/auth/profile`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
+export async function getProfile() {
+  const response = await api.get("/auth/profile");
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Something went wrong!");
-    }
+  if (!response.data) {
+    throw new Error("Something went wrong!");
+  }
 
-    return response.json();
+  return response.data;
+}
+
+export function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
 }
