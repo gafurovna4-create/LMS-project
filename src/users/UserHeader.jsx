@@ -10,46 +10,46 @@ import {
 import { useState } from "react";
 import Modal from "../users/Modal";
 import axios from "axios";
-
-// 1. setUsers prop sifatida qabul qilinadi
-function UserHeader({ setUsers }) {
+ 
+function UserHeader({ onCreateUser }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState(
+  "https://www.dreamstime.com/d-icon-avatar-cartoon-cute-freelancer-woman-working-online-learning-laptop-transparent-png-background-works-embodying-image345422695");
+
+  const [isActive, setIsActive] = useState(false);
+
+
+  function resetForm() {
+    setName("")
+    setEmail("")
+    setPassword("")
+    setAvatar("")
+    setRole("")
+  }
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "https://api.escuelajs.co/api/v1/users",
-        {
-          email,
-          name,
-          password,
-          avatar,
-        }
-      );
 
-      // 2. Yangi qo'shilgan user darhol ro'yxatga qo'shiladi
-      setUsers((prev) => {
-        // Agar bu ID oldin qo'shilgan bo'lmasagina qo'shamiz
-        const exists = prev.some((u) => u.id === response.data.id);
-        if (exists) return prev;
-        return [response.data, ...prev];
-      });
-
-      setEmail("");
-      setName("");
-      setPassword("");
-      setRole("");
-      setAvatar("");
-      setOpen(false);
-    } catch (error) {
-      console.log(error.message);
+    const newUser = {
+      id: new Date().getMilliseconds(),
+      name,
+      email,
+      password,
+      role,
+      avatar,
+      status: "Active",
+      joined: new Date().toLocaleDateString(),
     }
+
+    onCreateUser(newUser)
+
+    resetForm();
+    setOpen(!open)
   };
 
   return (

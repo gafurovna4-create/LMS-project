@@ -17,7 +17,23 @@ const UsersPage = () => {
     setStatus("All");
   }
 
-  const filteredUsers = users.filter((user) => {
+  const handleCreateUser = (newUser) => {
+    setUsers([...users, newUser]);
+  }
+
+  const handleUpdateUser = (updateUser) => {
+    setUsers((prevUser) => {
+      prevUser.map((item) => 
+      item.id === updateUser.id ? updateUser : prevUser,
+      )
+    })
+  };
+
+  const handleDelete = (id) => {
+    setUsers((prevUsers) => prevUsers.filter((user) => item.id !== id));
+  };
+
+  const filteredData = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
@@ -30,7 +46,7 @@ const UsersPage = () => {
 
   return (
     <>
-      <UserHeader users={users} setUsers={setUsers} /> {/* 👈 prop uzatildi */}
+      <UserHeader onCreateUser={handleCreateUser }/>
       <UserFilters
         search={search}
         setSearch={setSearch}
@@ -41,7 +57,7 @@ const UsersPage = () => {
         onReset={handleReset}
       />
 
-      <UserTable users={filteredUsers} />
+      <UserTable users={users} setUsers={setUsers} />
     </>
   );
 };

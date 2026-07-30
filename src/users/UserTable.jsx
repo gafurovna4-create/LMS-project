@@ -1,6 +1,14 @@
 import UserRow from "./UserRow";
 
-function UserTable({ users }) {
+function UserTable({ users, setUsers }) {
+  const handleUpdateUser = (updatedUser) => {
+    setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+  };
+
+  const handleDeleteUser = (id) => {
+    setUsers(users.filter((u) => u.id !== id));
+  };
+  
   if (users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12">
@@ -27,7 +35,12 @@ function UserTable({ users }) {
 
         <tbody>
           {users.map((user) => (
-            <UserRow key={user.id} user={user} />
+            <UserRow 
+            key={user.id} 
+            user={user} 
+            onUpdateUser={handleUpdateUser} 
+            onDeleteUser={handleDeleteUser} 
+          />
           ))}
         </tbody>
       </table>
