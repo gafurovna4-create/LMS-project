@@ -1,15 +1,34 @@
 import { Pencil, Trash2, User, Mail, ShieldCheck, Image, Save } from "lucide-react";
 import { useState } from "react";
 import Modal from "./Modal";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 function UserRow({ user, onUpdateUser, onDeleteUser }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [role, setRole] = useState(user.role);
-  const [status, setStatus] = useState(user.status);
-  const [avatar, setAvatar] = useState(user.avatar);
+
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      role: "",
+      status: "Active",
+      avatar: ""
+    }
+  });
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        email: user.email || "",
+        role: user.role || "",
+        status: user.status || "Active",
+        avatar: user.avatar || ""
+      });
+    }
+  }, [user, reset]);
 
   const roleStyles = {
     Administrator: "bg-blue-100 text-blue-700",
@@ -29,16 +48,14 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
     setDeleteOpen(false);
   }
 
-  function handleEditSubmit(e) {
-    e.preventDefault();
-
-    const updatedUser = {
+  function handleEditSubmit(data) {
+     const updatedUser = {
       ...user,
-      name,
-      email,
-      role,
-      status,
-      avatar,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      status: data.status,
+      avatar: data.avatar,
     };
 
     onUpdateUser(updatedUser);
@@ -120,7 +137,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
         onClose={() => setEditOpen(false)}
         title="Edit User"
       >
-        <form onSubmit={handleEditSubmit} className="grid gap-5 p-6 md:grid-cols-2">
+        <form onSubmit={handleSubmit(handleEditSubmit)} className="grid gap-5 p-6 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">
               Full name
@@ -132,9 +149,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
               />
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                {...register("name", { required: true })}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -150,10 +165,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register("email", { required: true })}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -167,10 +179,10 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                {...register("role", { required: true })}
                 className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               >
+                <option value="">Select role</option>
                 <option value="Administrator">Administrator</option>
                 <option value="Mentor">Mentor</option>
                 <option value="Student">Student</option>
@@ -185,8 +197,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
             </span>
             <div className="relative">
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                {...register("status", { required: true })}
                 className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 outline-none focus:border-blue-500"
               >
                 <option value="Active">Active</option>
@@ -207,8 +218,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
               />
               <input
                 type="url"
-                value={avatar}
-                onChange={(e) => setAvatar(e.target.value)}
+                {...register("avatar")}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -219,11 +229,7 @@ function UserRow({ user, onUpdateUser, onDeleteUser }) {
               type="button"
               onClick={() => {
                 setEditOpen(false);
-                setName(user.name);
-                setEmail(user.email);
-                setRole(user.role);
-                setStatus(user.status);
-                setAvatar(user.avatar);
+                reset();
               }}
               className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50"
             >

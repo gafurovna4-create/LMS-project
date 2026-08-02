@@ -8,48 +8,33 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form"; 
 import Modal from "../users/Modal";
-import axios from "axios";
  
 function UserHeader({ onCreateUser }) {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
-  const [avatar, setAvatar] = useState(
-  "https://www.dreamstime.com/d-icon-avatar-cartoon-cute-freelancer-woman-working-online-learning-laptop-transparent-png-background-works-embodying-image345422695");
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "",
+      avatar: "https://www.dreamstime.com/d-icon-avatar-cartoon-cute-freelancer-woman-working-online-learning-laptop-transparent-png-background-works-embodying-image345422695"
+    }
+  });
 
-  const [isActive, setIsActive] = useState(false);
-
-
-  function resetForm() {
-    setName("")
-    setEmail("")
-    setPassword("")
-    setAvatar("")
-    setRole("")
-  }
-  
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = (data) => {
     const newUser = {
       id: new Date().getMilliseconds(),
-      name,
-      email,
-      password,
-      role,
-      avatar,
+      ...data, 
       status: "Active",
       joined: new Date().toLocaleDateString(),
-    }
+    };
 
-    onCreateUser(newUser)
-
-    resetForm();
-    setOpen(!open)
+    onCreateUser(newUser);
+ 
+    reset();
+    setOpen(false);
   };
 
   return (
@@ -74,7 +59,7 @@ function UserHeader({ onCreateUser }) {
       </div>
 
       <Modal IsOpen={open} onClose={() => setOpen(false)} title="Create User">
-        <form onSubmit={handleSubmit} className="grid gap-5 p-6 md:grid-cols-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5 p-6 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-slate-700">
               Full name
@@ -87,9 +72,7 @@ function UserHeader({ onCreateUser }) {
               <input
                 type="text"
                 placeholder="Ism-familiya"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                {...register("name", { required: true })} 
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -107,9 +90,7 @@ function UserHeader({ onCreateUser }) {
               <input
                 type="email"
                 placeholder="jasur@mail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register("email", { required: true })}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -127,9 +108,7 @@ function UserHeader({ onCreateUser }) {
               <input
                 type="password"
                 placeholder="Parol"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register("password", { required: true })} 
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -143,8 +122,7 @@ function UserHeader({ onCreateUser }) {
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                {...register("role", { required: true })}
                 className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               >
                 <option value="">Select role</option>
@@ -167,8 +145,7 @@ function UserHeader({ onCreateUser }) {
               <input
                 type="url"
                 placeholder="https://example.com/avatar.jpg"
-                value={avatar}
-                onChange={(e) => setAvatar(e.target.value)}
+                {...register("avatar")}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 outline-none focus:border-blue-500"
               />
             </div>
