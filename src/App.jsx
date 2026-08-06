@@ -13,6 +13,7 @@ import Settings from './pages/dashboard/Settings'
 import ProtectedRoute from './routes/ProtectedRoute'
 
 import UsersPage from './pages/dashboard/UsersPage'
+import Product from './Product'
 
 
 const App = () => {
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="products" element={<Product />} />
         </Route>
         <Route path="*" element={<p>Not Found 404</p>} />
       </Routes>

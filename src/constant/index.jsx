@@ -1,4 +1,5 @@
-import { BookOpen, GraduationCap, House, Settings, User, Users as UsersIcon } from "lucide-react";
+
+import { BookOpen, GraduationCap, House, Package, Settings, User, Users as UsersIcon } from "lucide-react";
 
 export const menus = [
   {
@@ -33,6 +34,12 @@ export const menus = [
   },
   {
     id: 6,
+    title: "Products",
+    path: "/products",
+    icon: <Package size={20} />,
+  },
+  {
+    id: 7,
     title: "Settings",
     path: "/settings",
     icon: <Settings size={20} />,
