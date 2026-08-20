@@ -1,20 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { getProducts } from "./constant/data/product";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ProductHeader from "./ProductHeader";
-
+import { api } from "./api/api";
 
 const Product = () => {
-  const [products, setProducts] = useState([]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    getProducts()
-      .then((data) => setProducts(data))
-      .catch((err) => console.log(err));
-  }, []);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => api.get("/products").then((res) => res.data),
+  });
+
+  const products = data ?? [];
+
+  const handleProductAdded = (newProduct) => {
+    queryClient.setQueryData(["products"], (prev = []) => [newProduct, ...prev]);
+  };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error: {error?.message || "Failed to load products"}</p>;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-    <ProductHeader products={products} setProducts={setProducts} />
+      <ProductHeader onProductAdded={handleProductAdded} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
         {products.map((item) => (
@@ -23,7 +30,7 @@ const Product = () => {
             className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
           >
             <img
-              src={item.images[0]}
+              src={item.images?.[0] || "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"}
               alt={item.title}
               className="w-full h-52 object-cover"
             />

@@ -8,33 +8,42 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form"; 
+import { useForm } from "react-hook-form";
 import Modal from "../users/Modal";
+import { useCreateUser } from "../hooks/useUsers";
  
-function UserHeader({ onCreateUser }) {
+function UserHeader() {
   const [open, setOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const createUser = useCreateUser();
+
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       name: "",
       email: "",
       password: "",
       role: "",
-      avatar: "https://www.dreamstime.com/d-icon-avatar-cartoon-cute-freelancer-woman-working-online-learning-laptop-transparent-png-background-works-embodying-image345422695"
-    }
+      avatar: "https://www.dreamstime.com/d-icon-avatar-cartoon-cute-freelancer-woman-working-online-learning-laptop-transparent-png-background-works-embodying-image345422695",
+    },
   });
 
-  const onSubmit = (data) => {
-    const newUser = {
-      id: new Date().getMilliseconds(),
-      ...data, 
-      status: "Active",
-      joined: new Date().toLocaleDateString(),
-    };
+  const onSubmit = async (data) => {
+    setErrorMessage("");
 
-    onCreateUser(newUser);
- 
-    reset();
-    setOpen(false);
+    try {
+      await createUser.mutateAsync({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        avatar: data.avatar,
+      });
+
+      reset();
+      setOpen(false);
+    } catch (error) {
+      setErrorMessage(error?.message || "Foydalanuvchi yaratishda xatolik yuz berdi");
+    }
   };
 
   return (
@@ -152,12 +161,16 @@ function UserHeader({ onCreateUser }) {
           </label>
 
           <div className="flex flex-col gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-end md:col-span-2">
+            {errorMessage && (
+              <p className="text-sm text-red-500">{errorMessage}</p>
+            )}
             <button
               type="submit"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 font-semibold text-white transition-colors duration-150 hover:bg-blue-700"
+              disabled={createUser.isLoading}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 font-semibold text-white transition-colors duration-150 hover:bg-blue-700 disabled:opacity-50"
             >
               <UserPlus size={19} />
-              Create User
+              {createUser.isLoading ? "Yaratilyapti..." : "Create User"}
             </button>
           </div>
         </form>

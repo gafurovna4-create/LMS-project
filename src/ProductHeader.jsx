@@ -1,10 +1,10 @@
 import { Plus, Tag, DollarSign, FileText, Image, List } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.mjs";
 import Modal from "./users/Modal";
+import { useCreateProduct } from "./hooks/useProducts";
 
 
 const productSchema = z.object({
@@ -35,8 +35,9 @@ const productSchema = z.object({
     .regex(/^(https?:\/\/).+/, "URL http:// yoki https:// bilan boshlanishi kerak"),
 });
 
-function ProductHeader({ products, setProducts }) {
+function ProductHeader() {
   const [open, setOpen] = useState(false);
+  const createProduct = useCreateProduct();
 
   const {
     register,//inputlarni forma bilan bog'laydi.
@@ -50,18 +51,13 @@ function ProductHeader({ products, setProducts }) {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        "https://api.escuelajs.co/api/v1/products",
-        {
-          title: data.title,
-          price: Number(data.price),
-          description: data.description,
-          categoryId: Number(data.categoryId),
-          images: [data.image],
-        }
-      );
-
-      setProducts((prev) => [...prev, response.data]);
+      await createProduct.mutateAsync({
+        title: data.title,
+        price: Number(data.price),
+        description: data.description,
+        categoryId: Number(data.categoryId),
+        images: [data.image],
+      });
 
       reset();
       setOpen(false);
